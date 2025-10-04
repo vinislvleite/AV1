@@ -1,8 +1,9 @@
 import { Aeronave } from "./aeronave";
-import { FileManager } from "./fileManager";
 import { Peca } from "./peca";
 import { EtapaProducao } from "./etapasproducao";
 import { Teste } from "./teste";
+import * as fs from 'fs';
+import * as path from 'path';
 
 export class Relatorio {
     
@@ -15,49 +16,50 @@ export class Relatorio {
         const relatorio = this.criarRelatorioDetalhado(aeronave, pecas, etapas, testes);
         const nomeArquivo = `relatorios/relatorio_aeronave_${aeronave.codigo}_${new Date().toISOString().split('T')[0]}.txt`;
         
-        FileManager.salvar(nomeArquivo, [relatorio]);
-        console.log(`Relatório salvo em: ${nomeArquivo}`);
+        const dir = path.dirname(nomeArquivo);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        
+        fs.writeFileSync(nomeArquivo, relatorio, 'utf-8');
+        console.log(`Relatorio salvo em: ${nomeArquivo}`);
     }
 
     private criarRelatorioDetalhado(aeronave: Aeronave, pecas: Peca[], etapas: EtapaProducao[], testes: Teste[]): string {
         return `
-RELATÓRIO FINAL DA AERONAVE - PRONTA PARA ENTREGA
-==================================================
+Relatorio da aeronave
 
-INFORMAÇÕES DETALHADAS DA AERONAVE:
------------------------------------
-• Código: ${aeronave.codigo}
+Informacoes da aeronave:
+• Codigo: ${aeronave.codigo}
 • Modelo: ${aeronave.modelo}
 • Tipo: ${aeronave.tipo}
 • Capacidade: ${aeronave.capacidade} passageiros
 • Alcance: ${aeronave.alcance} km
+• Cliente: ${aeronave.cliente}
+• Data de Entrega: ${aeronave.dataEntrega}
 
-PEÇAS UTILIZADAS:
-----------------
+Pecas usadas:
 ${pecas.length > 0 
     ? pecas.map((peca, index) => 
         `${index + 1}. ${peca.nome} | Tipo: ${peca.tipo} | Fornecedor: ${peca.fornecedor} | Status: ${peca.status}`
       ).join('\n')
-    : 'Nenhuma peça registrada'}
+    : 'Nenhuma peca registrada'}
 
-ETAPAS DE PRODUÇÃO REALIZADAS:
------------------------------
+Etapas de producao da aeronave:
 ${etapas.length > 0 
     ? etapas.map((etapa, index) => 
         `${index + 1}. ${etapa.nome} | Prazo: ${etapa.prazoConclusao.toLocaleDateString('pt-BR')} | Status: ${etapa.status}`
       ).join('\n')
     : 'Nenhuma etapa registrada'}
 
-RESULTADOS DOS TESTES:
-----------------------
+Resultado dos testes:
 ${testes.length > 0 
     ? testes.map((teste, index) => 
         `${index + 1}. ${teste.tipo} | Resultado: ${teste.resultado}`
       ).join('\n')
     : 'Nenhum teste registrado'}
 
-DATA DE EMISSÃO: ${new Date().toLocaleDateString('pt-BR')}
-==================================================
+Data de emissao: ${new Date().toLocaleDateString('pt-BR')}
         `.trim();
     }
 }

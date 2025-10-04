@@ -3,9 +3,27 @@
     "id": "1",
     "nome": "Administrador",
     "telefone": "000000000",
-    "endereco": "Endereco Admin",
+    "endereco": "Endereço Admin",
     "usuario": "admin",
     "senha": "1234",
-    "nivelPermissao": "adminstrador"
+    "nivelPermissao": "administrador"
+  },
+  {
+    "id": "12",
+    "nome": "mig",
+    "telefone": "12",
+    "endereco": "12",
+    "usuario": "mig",
+    "senha": "123",
+    "nivelPermissao": "administrador"
+  },
+  {
+    "id": "0",
+    "nome": "",
+    "telefone": "",
+    "endereco": "",
+    "usuario": "",
+    "senha": "",
+    "nivelPermissao": "administrador"
   }
 ]

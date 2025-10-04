@@ -1,5 +1,5 @@
 export enum Permissao {
-    ADMINSTRADOR= 'adminstrador',
+    ADMINISTRADOR= 'administrador',
     ENGENHEIRO = 'engenheiro',
     OPERADOR = 'operador'
 }

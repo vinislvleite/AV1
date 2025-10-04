@@ -32,12 +32,12 @@ export class EtapaProducao {
     }
 
     public associarFuncionario(f: Funcionario): void {
-        if (this.funcionarios.some(f => f.id === f.id)) {
-            console.log(`O funcionário ${f.nome} já está nesta etapa.`);
+        if (this.funcionarios.some(func => func.id === f.id)) {
+            console.log(`O funcionario ${f.nome} ja esta nesta etapa.`);
             return;
         }
         this.funcionarios.push(f);
-        console.log(`Funcionário ${f.nome} foi associado à etapa "${this.nome}".`);
+        console.log(`Funcionario ${f.nome} foi associado a etapa "${this.nome}".`);
     }
 
     public listarFuncionarios(): Funcionario[] {
