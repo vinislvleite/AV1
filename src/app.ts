@@ -21,7 +21,6 @@ const testes: Teste[] = [];
 const funcionarios: Funcionario[] = [];
 let usuarioLogado: Funcionario | null = null;
 
-// Configurar tratamento do Ctrl+C
 process.on('SIGINT', () => {
     console.log('\n\nSaindo do sistema...');
     process.exit(0);
@@ -39,7 +38,7 @@ function fazerLogin(): boolean {
         console.log(`\nBem-vindo, ${funcionario.nome}! (${funcionario.nivelPermissao})`);
         return true;
     } else {
-        console.log("Usuario ou senha invalidos!");
+        console.log("Usuario ou senha invalidos");
         return false;
     }
 }
@@ -69,7 +68,7 @@ function menuFuncionarios() {
         switch (opcao) {
             case "1": {
                 if (!temPermissao(Permissao.ADMINSTRADOR)) {
-                    console.log("Acesso negado! Apenas administradores podem cadastrar funcionarios.");
+                    console.log("Acesso negado!\nApenas administradores podem cadastrar funcionarios.");
                     break;
                 }
                 
@@ -91,13 +90,13 @@ function menuFuncionarios() {
                 
                 funcionarios.push(funcionario);
                 funcionario.salvar();
-                console.log("Funcionario cadastrado com sucesso!");
+                console.log("Funcionario cadastrado com sucesso");
                 break;
             }
             
             case "2": {
                 if (funcionarios.length === 0) {
-                    console.log("Nenhum funcionario cadastrado!");
+                    console.log("Nenhum funcionario cadastrado");
                 } else {
                     funcionarios.forEach(f => {
                         console.log(`${f.id} - ${f.nome} - ${f.nivelPermissao} - ${f.usuario}`);
@@ -110,7 +109,7 @@ function menuFuncionarios() {
                 break;
                 
             default:
-                console.log("Opcao invalida!");
+                console.log("Opcao invalida");
         }
     }
 }
@@ -128,7 +127,7 @@ function menuTestes() {
         switch (opcao) {
             case "1": {
                 if (!temPermissao(Permissao.ENGENHEIRO)) {
-                    console.log("Acesso negado! Apenas engenheiros podem cadastrar testes.");
+                    console.log("Acesso negado!\nApenas engenheiros podem cadastrar testes.");
                     break;
                 }
                 
@@ -145,13 +144,13 @@ function menuTestes() {
                 const teste = new Teste(opcoesTipo[tipoIndex], opcoesResultado[resultadoIndex]);
                 testes.push(teste);
                 teste.salvar();
-                console.log("Teste cadastrado com sucesso!");
+                console.log("Teste cadastrado");
                 break;
             }
             
             case "2": {
                 if (testes.length === 0) {
-                    console.log("Nenhum teste cadastrado!");
+                    console.log("Nenhum teste cadastrado");
                 } else {
                     testes.forEach((t, index) => {
                         console.log(`${index + 1}. ${t.tipo} - Resultado: ${t.resultado}`);
@@ -164,20 +163,20 @@ function menuTestes() {
                 break;
                 
             default:
-                console.log("Opcao invalida!");
+                console.log("Opcao invalida");
         }
     }
 }
 
 function gerarRelatorio() {
     if (!temPermissao(Permissao.ENGENHEIRO)) {
-        console.log("Acesso negado! Apenas engenheiros podem gerar relatorios.");
+        console.log("Acesso negado!\nApenas engenheiros podem gerar relatorios.");
         return;
     }
     
     const aeronaves = aeronaveService.listar();
     if (aeronaves.length === 0) {
-        console.log("Nenhuma aeronave cadastrada para gerar relatorio!");
+        console.log("Nenhuma aeronave cadastrada para gerar relatorio");
         return;
     }
     
@@ -192,7 +191,7 @@ function gerarRelatorio() {
         const aeronaveSelecionada = aeronaves[escolha];
         const relatorio = new Relatorio();
         
-        console.log("\nGerando relatorio...");
+        console.log("\nGerando relatorio");
         relatorio.gerarRelatorio(aeronaveSelecionada, pecas, etapas, testes);
         
         const salvar = readlineSync.keyInYN("Deseja salvar o relatorio em arquivo?");
@@ -200,7 +199,7 @@ function gerarRelatorio() {
             relatorio.salvarEmArquivo(aeronaveSelecionada, pecas, etapas, testes);
         }
     } else {
-        console.log("Opcao invalida!");
+        console.log("Opcao invalida");
     }
 }
 
@@ -219,32 +218,36 @@ function menu() {
     
     let opcao = "";
     while (opcao !== "0") {
-        console.log(`\n=== MENU PRINCIPAL (${usuarioAtual.nome} - ${usuarioAtual.nivelPermissao}) ===`);
-        console.log("1. Cadastrar Aeronave");
-        console.log("2. Listar Aeronaves");
-        console.log("3. Cadastrar Peca");
-        console.log("4. Atualizar Status de Peca");
-        console.log("5. Listar Pecas");
-        console.log("6. Cadastrar Etapa");
-        console.log("7. Iniciar Etapa");
-        console.log("8. Finalizar Etapa");
-        console.log("9. Listar Etapas");
-        console.log("10. Gerenciar Testes");
-        console.log("11. Gerar Relatorio");
-        console.log("12. Gerenciar Funcionarios");
-        console.log("0. Sair");
+        console.log(`\n=== BEM VINDO A AEROCODE (${usuarioAtual.nome} - ${usuarioAtual.nivelPermissao}) ===`);
+        console.log("1. Gerenciar Funcionarios");
+        console.log("2. Cadastrar Aeronave");
+        console.log("3. Listar Aeronaves");
+        console.log("4. Cadastrar Peca");
+        console.log("5. Atualizar Status de Peca");
+        console.log("6. Listar Pecas");
+        console.log("7. Cadastrar Etapa");
+        console.log("8. Iniciar Etapa");
+        console.log("9. Finalizar Etapa");
+        console.log("10. Listar Etapas");
+        console.log("11. Gerenciar Testes");
+        console.log("12. Gerar Relatorio");
+        console.log("0. Sair da aerocode");
         
         try {
             opcao = readlineSync.question("Escolha uma opcao: ");
         } catch (error) {
-            console.log("\nSaindo...");
+            console.log("\nSaindo do aerocode");
             break;
         }
 
         switch (opcao) {
-            case "1": {
+            case "1":
+                menuFuncionarios();
+                break;
+                
+            case "2": {
                 if (!temPermissao(Permissao.ENGENHEIRO)) {
-                    console.log("Acesso negado! Apenas engenheiros podem cadastrar aeronaves.");
+                    console.log("Acesso negado!\nApenas engenheiros podem cadastrar aeronaves.");
                     break;
                 }
                 
@@ -280,19 +283,19 @@ function menu() {
                 break;
             }
             
-            case "2": {
+            case "3": {
                 const aeronaves = aeronaveService.listar();
                 if (aeronaves.length === 0) {
-                    console.log("Nenhuma aeronave cadastrada!");
+                    console.log("Nenhuma aeronave cadastrada");
                 } else {
                     aeronaves.forEach(a => console.log(a.detalhes()));
                 }
                 break;
             }
             
-            case "3": {
+            case "4": {
                 if (!temPermissao(Permissao.OPERADOR)) {
-                    console.log("Acesso negado! Apenas operadores podem cadastrar pecas.");
+                    console.log("Acesso negado!\nApenas operadores podem cadastrar pecas.");
                     break;
                 }
                 
@@ -304,7 +307,7 @@ function menu() {
                 });
                 
                 if (tipoIndex === -1) {
-                    console.log("Operacao cancelada!");
+                    console.log("Operacao cancelada");
                     break;
                 }
                 
@@ -316,7 +319,7 @@ function menu() {
                 });
                 
                 if (statusIndex === -1) {
-                    console.log("Operacao cancelada!");
+                    console.log("Operacao cancelada");
                     break;
                 }
 
@@ -329,13 +332,13 @@ function menu() {
 
                 pecas.push(peca);
                 peca.salvar();
-                console.log("Peca cadastrada!");
+                console.log("Peca cadastrada");
                 break;
             }
             
-            case "4": {
+            case "5": {
                 if (!temPermissao(Permissao.OPERADOR)) {
-                    console.log("Acesso negado! Apenas operadores podem atualizar status de pecas.");
+                    console.log("Acesso negado!\nApenas operadores podem atualizar status de pecas.");
                     break;
                 }
                 
@@ -349,7 +352,7 @@ function menu() {
                     });
                     
                     if (statusIndex === -1) {
-                        console.log("Operacao cancelada!");
+                        console.log("Operacao cancelada");
                         break;
                     }
                     
@@ -357,23 +360,23 @@ function menu() {
                     peca.atualizarStatus(status);
                     peca.salvar();
                 } else {
-                    console.log("Peca nao encontrada!");
+                    console.log("Peca nao encontrada");
                 }
                 break;
             }
             
-            case "5": {
+            case "6": {
                 if (pecas.length === 0) {
-                    console.log("Nenhuma peca cadastrada!");
+                    console.log("Nenhuma peca cadastrada");
                 } else {
                     pecas.forEach(p => console.log(`${p.nome} - ${p.tipo} (${p.status})`));
                 }
                 break;
             }
             
-            case "6": {
+            case "7": {
                 if (!temPermissao(Permissao.ENGENHEIRO)) {
-                    console.log("Acesso negado! Apenas engenheiros podem cadastrar etapas.");
+                    console.log("Acesso negado!\nApenas engenheiros podem cadastrar etapas.");
                     break;
                 }
                 
@@ -384,11 +387,11 @@ function menu() {
                 
                 const etapa = new EtapaProducao(nome, prazoDate);
                 etapas.push(etapa);
-                console.log("Etapa cadastrada!");
+                console.log("Etapa cadastrada");
                 break;
             }
             
-            case "7": {
+            case "8": {
                 if (!temPermissao(Permissao.OPERADOR)) {
                     console.log("Acesso negado! Apenas operadores podem iniciar etapas.");
                     break;
@@ -400,12 +403,12 @@ function menu() {
                 if (etapa) {
                     etapa.iniciar();
                 } else {
-                    console.log("Etapa nao encontrada!");
+                    console.log("Etapa nao encontrada");
                 }
                 break;
             }
             
-            case "8": {
+            case "9": {
                 if (!temPermissao(Permissao.OPERADOR)) {
                     console.log("Acesso negado! Apenas operadores podem finalizar etapas.");
                     break;
@@ -417,30 +420,26 @@ function menu() {
                 if (etapa) {
                     etapa.finalizar();
                 } else {
-                    console.log("Etapa nao encontrada!");
+                    console.log("Etapa nao encontrada");
                 }
                 break;
             }
             
-            case "9": {
+            case "10": {
                 if (etapas.length === 0) {
-                    console.log("Nenhuma etapa cadastrada!");
+                    console.log("Nenhuma etapa cadastrada");
                 } else {
                     etapas.forEach(e => console.log(`${e.nome} - Prazo: ${e.prazoConclusao.toLocaleDateString()} - (${e.status})`));
                 }
                 break;
             }
             
-            case "10":
+            case "11":
                 menuTestes();
                 break;
                 
-            case "11":
-                gerarRelatorio();
-                break;
-                
             case "12":
-                menuFuncionarios();
+                gerarRelatorio();
                 break;
             
             case "0":
@@ -449,7 +448,7 @@ function menu() {
                 break;
                 
             default:
-                console.log("Opcao invalida!");
+                console.log("Opcao invalida");
         }
     }
 }
