@@ -5,36 +5,249 @@ import { Relatorio } from './classes/relatorio';
 import { Peca } from './classes/peca';
 import { EtapaProducao } from "./classes/etapasproducao";
 import { Teste } from './classes/teste';
+import { Funcionario } from './classes/funcionario';
 import { TipoAeronave } from './enums/TipoAeronave';
 import { TipoPeca } from './enums/TipoPeca';
 import { StatusPeca } from './enums/StatusPeca';
 import { StatusEtapa } from './enums/StatusEtapa';
 import { TipoTeste } from './enums/TipoTeste';
 import { ResultadoTeste } from './enums/ResultadoTeste';
+import { Permissao } from './enums/NivelPermissao';
 
 const aeronaveService = new AeronaveService();
 const pecas: Peca[] = [];
 const etapas: EtapaProducao[] = [];
+const testes: Teste[] = [];
+const funcionarios: Funcionario[] = [];
+let usuarioLogado: Funcionario | null = null;
 
-function menu() {
+// Configurar tratamento do Ctrl+C
+process.on('SIGINT', () => {
+    console.log('\n\nSaindo do sistema...');
+    process.exit(0);
+});
+
+function fazerLogin(): boolean {
+    console.log("\n=== LOGIN ===");
+    const usuario = readlineSync.question("Usuario: ");
+    const senha = readlineSync.question("Senha: ", { hideEchoBack: true });
+    
+    const funcionario = funcionarios.find(f => f.autenticar(usuario, senha));
+    
+    if (funcionario) {
+        usuarioLogado = funcionario;
+        console.log(`\nBem-vindo, ${funcionario.nome}! (${funcionario.nivelPermissao})`);
+        return true;
+    } else {
+        console.log("Usuario ou senha invalidos!");
+        return false;
+    }
+}
+
+function temPermissao(permissaoRequerida: Permissao): boolean {
+    if (!usuarioLogado) return false;
+    
+    const hierarquia = {
+        [Permissao.OPERADOR]: 1,
+        [Permissao.ENGENHEIRO]: 2,
+        [Permissao.ADMINSTRADOR]: 3
+    };
+    
+    return hierarquia[usuarioLogado.nivelPermissao] >= hierarquia[permissaoRequerida];
+}
+
+function menuFuncionarios() {
     let opcao = "";
     while (opcao !== "0") {
-        console.log("\n=== MENU PRINCIPAL ===");
-        console.log("1. Cadastrar Aeronave");
-        console.log("2. Listar Aeronaves");
-        console.log("3. Cadastrar Peça");
-        console.log("4. Atualizar Status de Peça");
-        console.log("5. Listar Peças");
-        console.log("6. Cadastrar Etapa");
-        console.log("7. Iniciar Etapa");
-        console.log("8. Finalizar Etapa");
-        console.log("9. Listar Etapas");
-        console.log("0. Sair");
+        console.log("\n=== GERENCIAR FUNCIONARIOS ===");
+        console.log("1. Cadastrar Funcionario");
+        console.log("2. Listar Funcionarios");
+        console.log("0. Voltar");
         
         opcao = readlineSync.question("Escolha uma opcao: ");
 
         switch (opcao) {
             case "1": {
+                if (!temPermissao(Permissao.ADMINSTRADOR)) {
+                    console.log("Acesso negado! Apenas administradores podem cadastrar funcionarios.");
+                    break;
+                }
+                
+                const id = readlineSync.question("ID: ");
+                const nome = readlineSync.question("Nome: ");
+                const telefone = readlineSync.question("Telefone: ");
+                const endereco = readlineSync.question("Endereco: ");
+                const usuario = readlineSync.question("Usuario: ");
+                const senha = readlineSync.question("Senha: ", { hideEchoBack: true });
+                
+                const opcoesPermissao = [...Object.values(Permissao)];
+                const permissaoIndex = readlineSync.keyInSelect(opcoesPermissao, "Nivel de Permissao: ", { 
+                    cancel: false 
+                });
+                
+                const funcionario = new Funcionario(
+                    id, nome, telefone, endereco, usuario, senha, opcoesPermissao[permissaoIndex]
+                );
+                
+                funcionarios.push(funcionario);
+                funcionario.salvar();
+                console.log("Funcionario cadastrado com sucesso!");
+                break;
+            }
+            
+            case "2": {
+                if (funcionarios.length === 0) {
+                    console.log("Nenhum funcionario cadastrado!");
+                } else {
+                    funcionarios.forEach(f => {
+                        console.log(`${f.id} - ${f.nome} - ${f.nivelPermissao} - ${f.usuario}`);
+                    });
+                }
+                break;
+            }
+            
+            case "0":
+                break;
+                
+            default:
+                console.log("Opcao invalida!");
+        }
+    }
+}
+
+function menuTestes() {
+    let opcao = "";
+    while (opcao !== "0") {
+        console.log("\n=== GERENCIAR TESTES ===");
+        console.log("1. Cadastrar Teste");
+        console.log("2. Listar Testes");
+        console.log("0. Voltar");
+        
+        opcao = readlineSync.question("Escolha uma opcao: ");
+
+        switch (opcao) {
+            case "1": {
+                if (!temPermissao(Permissao.ENGENHEIRO)) {
+                    console.log("Acesso negado! Apenas engenheiros podem cadastrar testes.");
+                    break;
+                }
+                
+                const opcoesTipo = [...Object.values(TipoTeste)];
+                const tipoIndex = readlineSync.keyInSelect(opcoesTipo, "Tipo de Teste: ", { 
+                    cancel: false 
+                });
+                
+                const opcoesResultado = [...Object.values(ResultadoTeste)];
+                const resultadoIndex = readlineSync.keyInSelect(opcoesResultado, "Resultado: ", { 
+                    cancel: false 
+                });
+                
+                const teste = new Teste(opcoesTipo[tipoIndex], opcoesResultado[resultadoIndex]);
+                testes.push(teste);
+                teste.salvar();
+                console.log("Teste cadastrado com sucesso!");
+                break;
+            }
+            
+            case "2": {
+                if (testes.length === 0) {
+                    console.log("Nenhum teste cadastrado!");
+                } else {
+                    testes.forEach((t, index) => {
+                        console.log(`${index + 1}. ${t.tipo} - Resultado: ${t.resultado}`);
+                    });
+                }
+                break;
+            }
+            
+            case "0":
+                break;
+                
+            default:
+                console.log("Opcao invalida!");
+        }
+    }
+}
+
+function gerarRelatorio() {
+    if (!temPermissao(Permissao.ENGENHEIRO)) {
+        console.log("Acesso negado! Apenas engenheiros podem gerar relatorios.");
+        return;
+    }
+    
+    const aeronaves = aeronaveService.listar();
+    if (aeronaves.length === 0) {
+        console.log("Nenhuma aeronave cadastrada para gerar relatorio!");
+        return;
+    }
+    
+    console.log("\n=== GERAR RELATORIO ===");
+    aeronaves.forEach((a, index) => {
+        console.log(`${index + 1}. ${a.codigo} - ${a.modelo}`);
+    });
+    
+    const escolha = Number(readlineSync.question("Escolha a aeronave: ")) - 1;
+    
+    if (escolha >= 0 && escolha < aeronaves.length) {
+        const aeronaveSelecionada = aeronaves[escolha];
+        const relatorio = new Relatorio();
+        
+        console.log("\nGerando relatorio...");
+        relatorio.gerarRelatorio(aeronaveSelecionada, pecas, etapas, testes);
+        
+        const salvar = readlineSync.keyInYN("Deseja salvar o relatorio em arquivo?");
+        if (salvar) {
+            relatorio.salvarEmArquivo(aeronaveSelecionada, pecas, etapas, testes);
+        }
+    } else {
+        console.log("Opcao invalida!");
+    }
+}
+
+function menu() {
+    while (!usuarioLogado) {
+        if (!fazerLogin()) {
+            const continuar = readlineSync.keyInYN("Deseja tentar novamente?");
+            if (!continuar) {
+                console.log("Saindo...");
+                return;
+            }
+        }
+    }
+
+    const usuarioAtual = usuarioLogado;
+    
+    let opcao = "";
+    while (opcao !== "0") {
+        console.log(`\n=== MENU PRINCIPAL (${usuarioAtual.nome} - ${usuarioAtual.nivelPermissao}) ===`);
+        console.log("1. Cadastrar Aeronave");
+        console.log("2. Listar Aeronaves");
+        console.log("3. Cadastrar Peca");
+        console.log("4. Atualizar Status de Peca");
+        console.log("5. Listar Pecas");
+        console.log("6. Cadastrar Etapa");
+        console.log("7. Iniciar Etapa");
+        console.log("8. Finalizar Etapa");
+        console.log("9. Listar Etapas");
+        console.log("10. Gerenciar Testes");
+        console.log("11. Gerar Relatorio");
+        console.log("12. Gerenciar Funcionarios");
+        console.log("0. Sair");
+        
+        try {
+            opcao = readlineSync.question("Escolha uma opcao: ");
+        } catch (error) {
+            console.log("\nSaindo...");
+            break;
+        }
+
+        switch (opcao) {
+            case "1": {
+                if (!temPermissao(Permissao.ENGENHEIRO)) {
+                    console.log("Acesso negado! Apenas engenheiros podem cadastrar aeronaves.");
+                    break;
+                }
+                
                 const codigo = readlineSync.question("Codigo: ");
                 const modelo = readlineSync.question("Modelo: ");
                 
@@ -44,7 +257,7 @@ function menu() {
                 });
                 
                 if (tipoIndex === -1) {
-                    console.log("Operação cancelada!");
+                    console.log("Operacao cancelada!");
                     break;
                 }
                 
@@ -72,13 +285,18 @@ function menu() {
                 if (aeronaves.length === 0) {
                     console.log("Nenhuma aeronave cadastrada!");
                 } else {
-                    aeronaves.forEach(a => a.detalhes());
+                    aeronaves.forEach(a => console.log(a.detalhes()));
                 }
                 break;
             }
             
             case "3": {
-                const nome = readlineSync.question("Nome da peça: ");
+                if (!temPermissao(Permissao.OPERADOR)) {
+                    console.log("Acesso negado! Apenas operadores podem cadastrar pecas.");
+                    break;
+                }
+                
+                const nome = readlineSync.question("Nome da peca: ");
                 
                 const opcoesTipo = [...Object.values(TipoPeca)];
                 const tipoIndex = readlineSync.keyInSelect(opcoesTipo, "Tipo: ", { 
@@ -86,7 +304,7 @@ function menu() {
                 });
                 
                 if (tipoIndex === -1) {
-                    console.log("Operação cancelada!");
+                    console.log("Operacao cancelada!");
                     break;
                 }
                 
@@ -98,7 +316,7 @@ function menu() {
                 });
                 
                 if (statusIndex === -1) {
-                    console.log("Operação cancelada!");
+                    console.log("Operacao cancelada!");
                     break;
                 }
 
@@ -110,12 +328,18 @@ function menu() {
                 );
 
                 pecas.push(peca);
-                console.log("Peça cadastrada!");
+                peca.salvar();
+                console.log("Peca cadastrada!");
                 break;
             }
             
             case "4": {
-                const nome = readlineSync.question("Nome da peça: ");
+                if (!temPermissao(Permissao.OPERADOR)) {
+                    console.log("Acesso negado! Apenas operadores podem atualizar status de pecas.");
+                    break;
+                }
+                
+                const nome = readlineSync.question("Nome da peca: ");
                 const peca = pecas.find(p => p.nome === nome);
                 
                 if (peca) {
@@ -125,21 +349,22 @@ function menu() {
                     });
                     
                     if (statusIndex === -1) {
-                        console.log("Operação cancelada!");
+                        console.log("Operacao cancelada!");
                         break;
                     }
                     
                     const status = opcoesStatus[statusIndex];
                     peca.atualizarStatus(status);
+                    peca.salvar();
                 } else {
-                    console.log("Peça não encontrada!");
+                    console.log("Peca nao encontrada!");
                 }
                 break;
             }
             
             case "5": {
                 if (pecas.length === 0) {
-                    console.log("Nenhuma peça cadastrada!");
+                    console.log("Nenhuma peca cadastrada!");
                 } else {
                     pecas.forEach(p => console.log(`${p.nome} - ${p.tipo} (${p.status})`));
                 }
@@ -147,6 +372,11 @@ function menu() {
             }
             
             case "6": {
+                if (!temPermissao(Permissao.ENGENHEIRO)) {
+                    console.log("Acesso negado! Apenas engenheiros podem cadastrar etapas.");
+                    break;
+                }
+                
                 const nome = readlineSync.question("Nome da etapa: ");
                 const prazo = readlineSync.question("Prazo (dd/mm/aaaa): ");
                 const [dia, mes, ano] = prazo.split("/").map(Number);
@@ -159,25 +389,35 @@ function menu() {
             }
             
             case "7": {
+                if (!temPermissao(Permissao.OPERADOR)) {
+                    console.log("Acesso negado! Apenas operadores podem iniciar etapas.");
+                    break;
+                }
+                
                 const nome = readlineSync.question("Nome da etapa: ");
                 const etapa = etapas.find(e => e.nome === nome);
                 
                 if (etapa) {
                     etapa.iniciar();
                 } else {
-                    console.log("Etapa não encontrada!");
+                    console.log("Etapa nao encontrada!");
                 }
                 break;
             }
             
             case "8": {
+                if (!temPermissao(Permissao.OPERADOR)) {
+                    console.log("Acesso negado! Apenas operadores podem finalizar etapas.");
+                    break;
+                }
+                
                 const nome = readlineSync.question("Nome da etapa: ");
                 const etapa = etapas.find(e => e.nome === nome);
                 
                 if (etapa) {
                     etapa.finalizar();
                 } else {
-                    console.log("Etapa não encontrada!");
+                    console.log("Etapa nao encontrada!");
                 }
                 break;
             }
@@ -191,14 +431,42 @@ function menu() {
                 break;
             }
             
+            case "10":
+                menuTestes();
+                break;
+                
+            case "11":
+                gerarRelatorio();
+                break;
+                
+            case "12":
+                menuFuncionarios();
+                break;
+            
             case "0":
                 console.log("Saindo...");
+                usuarioLogado = null;
                 break;
                 
             default:
-                console.log("Opção inválida!");
+                console.log("Opcao invalida!");
         }
     }
+}
+
+if (funcionarios.length === 0) {
+    const admin = new Funcionario(
+        "1",
+        "Administrador",
+        "000000000",
+        "Endereco Admin",
+        "admin",
+        "1234",
+        Permissao.ADMINSTRADOR
+    );
+    funcionarios.push(admin);
+    admin.salvar();
+    console.log("Usuario admin criado: admin / 1234");
 }
 
 menu();
