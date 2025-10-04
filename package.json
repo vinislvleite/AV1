@@ -1,8 +1,10 @@
 {
   "dependencies": {
-    "bcrypt": "^6.0.0"
+    "readline-sync": "^1.4.10"
   },
   "devDependencies": {
-    "@types/bcrypt": "^6.0.0"
+    "@types/node": "^24.6.2",
+    "@types/readline-sync": "^1.4.4",
+    "typescript": "^5.0.0"
   }
 }
